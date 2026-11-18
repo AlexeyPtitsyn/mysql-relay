@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    font-family: Verdana, Geneva, sans-serif;
+    background: #ECEFF1;
+    color: #263238;
+  }
+
+  button,
+  input[type="submit"] {
+    margin: 5px 0;
+  }
+</style>
+</head>
+<body>
+
+  <div id="loginForm">
+    Login: <input type="text" id="txtLogin" />
+    Password: <input type="password" id="txtPassword" />
+    <button id="btnLogin">Log in</button>
+  </div>
+
+  <button id="btnRequest">Make a request</button>
+
+  <pre id="preOutput">
+
+  </pre>
+
+  <button id="btnLogout">Log out</button>
+
+<script>
+/** Login click */
+btnLogin.addEventListener('click', async () => {
+  const formData = new FormData();
+  formData.append('action', 'login');
+  formData.append('login', txtLogin.value);
+  formData.append('password', txtPassword.value);
+
+  const response = await fetch('example-backend-formdata.php', {
+    method: 'POST',
+    body: formData
+  });
+
+  const json = response.json();
+
+  if(json.error) {
+    alert(json.error);
+  }
+
+  checkStatus();
+});
+
+/** Log out click */
+btnLogout.addEventListener('click', async () => {
+  const formData = new FormData();
+  formData.append('action', 'logout');
+
+  const response = await fetch('example-backend-formdata.php', {
+    method: 'POST',
+    body: formData
+  });
+
+  const json = await response.json();
+
+  alert(json.message);
+
+  checkStatus();
+});
+
+/** Request button click */
+btnRequest.addEventListener('click', async () => {
+  const formData = new FormData();
+  formData.append('action', 'request');
+  formData.append('req', 'SELECT * FROM `test` WHERE `value` = :value');
+  formData.append('values[value]', 1);
+
+  const response = await fetch('example-backend-formdata.php', {
+    method: 'POST',
+    body: formData
+  });
+
+  const json = await response.json();
+
+  if(json.error) {
+    preOutput.innerText = json.error;
+  } else {
+    preOutput.innerText = JSON.stringify(json.result, null, '  ');
+  }
+});
+
+/** Check login status and hide fields */
+async function checkStatus() {
+  const formData = new FormData();
+  formData.append('action', 'isLoggedIn');
+
+  const response = await fetch('example-backend-formdata.php', {
+    method: 'POST',
+    body: formData
+  });
+
+  const json = await response.json();
+
+  if(json.isLoggedIn) {
+    loginForm.style.display = 'none';
+    btnRequest.style.display = 'block';
+    preOutput.style.display = 'block';
+    btnLogout.style.display = 'block';
+    return;
+  }
+
+  loginForm.style.display = 'block';
+  btnRequest.style.display = 'none';
+  preOutput.style.display = 'none';
+  btnLogout.style.display = 'none';
+}
+
+/**
+ * Main
+ */
+checkStatus();
+</script>
+
+</body>
+</html>
